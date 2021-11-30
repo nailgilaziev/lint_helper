@@ -12,6 +12,13 @@ class ItemsListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (items.isEmpty)
+      return Center(
+          child: Icon(
+        Icons.article,
+        color: Colors.indigo,
+        size: 48,
+      ));
     return ListView.builder(
       itemBuilder: (BuildContext context, int i) => LintRuleItem(items[i]),
       itemCount: items.length,

@@ -5,17 +5,17 @@ enum LintSource { core, recommended, flutter, community, nail, my }
 Color colorForLintSource(LintSource source) {
   switch (source) {
     case LintSource.core:
-      return Colors.lightBlueAccent;
+      return Colors.blue[200]!;
     case LintSource.recommended:
-      return Colors.blue;
+      return Colors.blue[300]!;
     case LintSource.flutter:
-      return Colors.blueAccent;
+      return Colors.blue[400]!;
     case LintSource.community:
-      return Colors.indigoAccent;
+      return Colors.amber[200]!;
     case LintSource.nail:
       return Colors.green;
     case LintSource.my:
-      return Colors.lightGreen;
+      return Colors.red[200]!;
   }
 }
 

@@ -31,7 +31,7 @@ class Item {
 
   String urlTemplate = lintRulePageTemplate;
 
-  List<LintSource> owners = [];
+  Set<LintSource> owners = {};
 
   Item(
       {required this.name,

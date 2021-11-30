@@ -47,7 +47,6 @@ class _HomePageState extends State<HomePage> {
       d.addListener(() => setState(() {
             /// когда через интерфейс добавления "моих правил" будут добавлены новые элементы
             /// и если мы будем на вкладке my то интерфейс должен автоматически подхватить эти изменения
-            /// тоже самое должно произойти и при refresh all data
             updateTabItems();
           }));
       if (await d.fillFromDb()) {
@@ -82,20 +81,16 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  List<Item> itemsForIndex(int index) {
+  Set<Item> itemsForIndex(int index) {
     if (data == null) {
       print('no data for itemsForIndex func');
-      return [];
+      return {};
     }
     if (index == insertIndexForAll) {
       return data!.all;
     }
     int compensatedIndex = index < insertIndexForAll ? index : index - 1;
-    final items = data?.included[LintSource.values[compensatedIndex]] ??
-        []; //FIXME тут недоработка, null никогда не будет
-    if (items == null) {
-      throw 'itemsForIndex returned null for index compensatedIndex $compensatedIndex';
-    }
+    final items = data?.included[LintSource.values[compensatedIndex]] ?? {};
     return items;
   }
 
@@ -103,7 +98,7 @@ class _HomePageState extends State<HomePage> {
 
   String _query = '';
 
-  List<Item> tabItems = [];
+  Set<Item> tabItems = {};
 
   String get query => _query;
 

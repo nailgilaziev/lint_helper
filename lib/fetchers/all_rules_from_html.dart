@@ -14,16 +14,17 @@ class AllRulesFetcher {
     return r.body;
   }
 
-  Future<List<Item>> fetchAndParse() async {
+  Future<Set<Item>> fetchAndParse() async {
     html = await _fetchHtml();
 
     const err = '<h2>Error Rules</h2>';
     const style = '<h2>Style Rules</h2>';
     const pub = '<h2>Pub Rules</h2>';
 
-    return extractItems(err, style, Section.lintError) +
-        extractItems(style, pub, Section.lintStyle) +
-        extractItems(pub, '</body>', Section.lintPub);
+    return (extractItems(err, style, Section.lintError) +
+            extractItems(style, pub, Section.lintStyle) +
+            extractItems(pub, '</body>', Section.lintPub))
+        .toSet();
   }
 
   List<Item> extractItems(String from, String to, Section section) {

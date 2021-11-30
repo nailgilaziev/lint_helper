@@ -1,7 +1,9 @@
+import 'package:lint_helper/models/item.dart';
+
 class Comparator {
-  final Set<String> leftSet;
-  final Set<String> rightSet;
-  final Set<String> middleSet = {};
+  final Set<Item> leftSet;
+  final Set<Item> rightSet;
+  final Set<Item> middleSet = {};
 
   Comparator(this.leftSet, this.rightSet) {
     final oneOfSets = Set.from(leftSet);
@@ -20,7 +22,7 @@ class Comparator {
     report('both', middleSet);
   }
 
-  void report(String sourceName, Set<String> rules) {
+  void report(String sourceName, Set<Item> rules) {
     print('');
     print('');
     print('$sourceName declare additionally next rules:');

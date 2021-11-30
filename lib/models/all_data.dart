@@ -12,8 +12,8 @@ const lintRulePageTemplate =
 
 class AllData extends ChangeNotifier {
   DateTime? syncDate;
-  List<Item> all = [];
-  Map<LintSource, List<Item>> included = {};
+  Set<Item> all = {};
+  Map<LintSource, Set<Item>> included = {};
 
   void notifyMyItemsAdded() {
     notifyListeners();
@@ -58,12 +58,15 @@ class AllData extends ChangeNotifier {
   void fillItemsForSource(LintSource source, Iterable<String> names) {
     var items = all.where((e) {
       return names.contains(e.name);
-    }).toList();
+    }).toSet();
+    for (var item in items) {
+      item.owners.add(source);
+    }
     print('added ${items.length} to included for $source');
     included[source] = items;
   }
 
-  Future<bool> saveItems(List<Item> allRules) async {
+  Future<bool> saveItems(Set<Item> allRules) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final readyToSerialize = allRules.map((r) => r.toJson()).toList();
     print('saving all:${allRules.length}');
@@ -71,13 +74,13 @@ class AllData extends ChangeNotifier {
     return await prefs.setString('all_lint_rules', jsonString);
   }
 
-  Future<List<Item>> _readItems() async {
+  Future<Set<Item>> _readItems() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString('all_lint_rules');
-    if (jsonString == null) return [];
+    if (jsonString == null) return {};
     final arr = jsonDecode(jsonString) as List<dynamic>;
     final deserialized =
-        arr.map((v) => Item.fromJson(v as Map<String, dynamic>)).toList();
+        arr.map((v) => Item.fromJson(v as Map<String, dynamic>)).toSet();
     return deserialized;
   }
 

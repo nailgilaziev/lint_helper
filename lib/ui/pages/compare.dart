@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:lint_helper/comparator.dart';
 import 'package:lint_helper/models/all_data.dart';
+import 'package:lint_helper/models/item.dart';
 import 'package:lint_helper/models/lint_source.dart';
 import 'package:lint_helper/ui/pieces/items_list_view.dart';
 
@@ -14,77 +16,127 @@ class ComparePage extends StatefulWidget {
 }
 
 class _ComparePageState extends State<ComparePage> {
-  @override
-  Widget build(BuildContext context) {
-    final wide = MediaQuery.of(context).size.width > 700;
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text('Diff'),
-      ),
-      body: wide
-          ? Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    children: buildPanel(leftSource),
-                  ),
-                ),
-                Container(
-                  color: Colors.black26,
-                  width: 1,
-                ),
-                Expanded(
-                  child: Column(
-                    children: buildPanel(rightSource),
-                  ),
-                )
-              ],
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ...buildPanel(leftSource),
-                ...buildPanel(rightSource),
-              ],
-            ),
-    );
-  }
-
-  List<Widget> buildPanel(ValueNotifier<LintSource> source) {
-    return [
-      buildDropDown(source),
-      Expanded(
-        child: ItemsListView(items: widget.data.included[source.value]!),
-      ),
-    ];
-  }
-
   final leftSource = ValueNotifier(LintSource.flutter);
   final rightSource = ValueNotifier(LintSource.community);
 
+  @override
+  void initState() {
+    leftSource.addListener(sourceChanged);
+    rightSource.addListener(sourceChanged);
+    sourceChanged();
+    super.initState();
+  }
+
+  late Comparator comparator;
+
+  final List<Tab> myTabs = <Tab>[
+    Tab(text: 'only in left'),
+    Tab(text: 'exist in both'),
+    Tab(text: 'only in right'),
+  ];
+
+  void sourceChanged() {
+    final leftSet = Set<Item>.from(widget.data.included[leftSource.value]!);
+    final rightSet = Set<Item>.from(widget.data.included[rightSource.value]!);
+    comparator = Comparator(leftSet, rightSet);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final wide = MediaQuery.of(context).size.width > 700;
+    return DefaultTabController(
+        length: myTabs.length,
+        child: Scaffold(
+          appBar: AppBar(
+            centerTitle: true,
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildDropDown(leftSource),
+                const Text('vs', textScaleFactor: 0.6),
+                buildDropDown(rightSource),
+              ],
+            ),
+            bottom: TabBar(
+              tabs: myTabs,
+            ),
+          ),
+          body: TabBarView(
+            children: [
+              ItemsListView(items: comparator.leftSet.toList()),
+              ItemsListView(items: comparator.middleSet.toList()),
+              ItemsListView(items: comparator.rightSet.toList()),
+            ],
+          ),
+          // wide
+          //     ? Row(
+          //         children: [
+          //           Expanded(
+          //             child: Column(
+          //               children: buildPanel(leftSource),
+          //             ),
+          //           ),
+          //           Container(
+          //             color: Colors.black26,
+          //             width: 1,
+          //           ),
+          //           Expanded(
+          //             child: Column(
+          //               children: buildPanel(rightSource),
+          //             ),
+          //           )
+          //         ],
+          //       )
+          //     :
+          //     Column(
+          //   crossAxisAlignment: CrossAxisAlignment.stretch,
+          //   children: [
+          //     buildDropDown(leftSource),
+          //     Expanded(
+          //       child: ItemsListView(items: comparator.leftSet.toList()),
+          //     ),
+          //     buildDropDown(rightSource),
+          //     Expanded(
+          //       child: ItemsListView(items: comparator.rightSet.toList()),
+          //     ),
+          //   ],
+          // ),
+        ));
+  }
+
   Widget buildDropDown(ValueNotifier<LintSource> source) {
     return Container(
-      color: Colors.black12,
-      child: Center(
-        child: DropdownButton<LintSource>(
-          value: source.value,
-          icon: const Icon(Icons.arrow_downward),
-          underline: null,
-          iconSize: 12,
-          onChanged: (LintSource? newValue) {
-            setState(() {
-              source.value = newValue!;
-            });
-          },
-          items: LintSource.values
-              .map<DropdownMenuItem<LintSource>>((LintSource source) {
-            return DropdownMenuItem<LintSource>(
-              value: source,
-              child: Text(source.toString().substring(11)),
-            );
-          }).toList(),
-        ),
+      constraints: BoxConstraints(maxHeight: 32),
+      decoration: BoxDecoration(
+        color: Colors.black12,
+        borderRadius: BorderRadius.all(Radius.circular(12)),
+      ),
+      margin: EdgeInsets.all(4),
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      child: DropdownButton<LintSource>(
+        value: source.value,
+        isExpanded: false,
+        icon: const Icon(Icons.arrow_downward),
+        underline: Container(width: 0, height: 0),
+        dropdownColor: Colors.indigo,
+        iconSize: 12,
+        iconEnabledColor: Colors.white,
+        onChanged: (LintSource? newValue) {
+          setState(() {
+            source.value = newValue!;
+          });
+        },
+        items: LintSource.values
+            .map<DropdownMenuItem<LintSource>>((LintSource source) {
+          return DropdownMenuItem<LintSource>(
+            value: source,
+            child: Text(
+              source.toString().substring(11),
+              textScaleFactor: 0.8,
+              style: TextStyle(color: Colors.white),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
