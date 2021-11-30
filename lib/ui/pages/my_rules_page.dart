@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:lint_helper/fetchers/rules_from_yaml.dart';
+import 'package:lint_helper/models/all_data.dart';
+import 'package:lint_helper/models/lint_source.dart';
 
 class MyRulesPage extends StatefulWidget {
-  const MyRulesPage({Key? key}) : super(key: key);
+  const MyRulesPage({Key? key, required this.data}) : super(key: key);
+
+  final AllData data;
 
   @override
   _MyRulesPageState createState() => _MyRulesPageState();
@@ -17,15 +21,17 @@ class _MyRulesPageState extends State<MyRulesPage> {
       final body = controller.text;
       final cut = yaml.cutRulesFromYaml(body);
       final s = yaml.rulesSourceToSet(cut);
-      if (s.isEmpty) {
-        dialogParsingNoItems();
-      }
+      dialogParsingItems(s);
     } catch (e, st) {
       print(st);
     }
   }
 
-  void save() {
+  void save(Set<String> s) {
+    var data = widget.data;
+    data.fillItemsForSource(LintSource.my, s);
+    data.saveLintsForSource(LintSource.my, s);
+    data.notifyMyItemsAdded();
     Navigator.pop(context);
   }
 
@@ -72,36 +78,39 @@ class _MyRulesPageState extends State<MyRulesPage> {
           TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                parseAndReplace();
               },
-              child: const Text('Yes, clear it')),
+              child: const Text('Cancel')),
           TextButton(
               onPressed: () {
                 Navigator.pop(context);
+                parseAndReplace();
               },
-              child: const Text('Cancel')),
+              child: const Text('Yes, clear it')),
         ],
       ),
     );
   }
 
-  void dialogParsingNoItems() {
+  void dialogParsingItems(Set<String> s) {
+    final validRules =
+        widget.data.all.where((element) => s.contains(element.name));
     showDialog(
       context: context,
       builder: (BuildContext context) => AlertDialog(
-        content: const Text('No items parsed'),
+        content: Text(
+            '${s.isEmpty ? 'No' : s.length} lines parsed.\nvalid rules: ${validRules.length}'),
         actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                save();
-              },
-              child: const Text('Ok, continue')),
           TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               child: const Text('Cancel')),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                save(s);
+              },
+              child: const Text('Ok, continue')),
         ],
       ),
     );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:lint_helper/ui/pages/home_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // TODO на каждом rule повесить бейдж (в виде лампочки не двигающейся - см ниже) core recommended flutter / community (а еще warning/error level цветом выделить)
 // TODO внизу bar где фильтрация ALL, CORE, RECOMMENDED, FLUTTER, COMMUNITY, MY , NEW RAW PASTE
@@ -15,8 +14,6 @@ class Calc {
 }
 
 void main() {
-  SharedPreferences.setMockInitialValues({});
-
   print('main called');
   runApp(const MyApp());
 }

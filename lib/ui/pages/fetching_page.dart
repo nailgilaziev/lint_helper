@@ -62,9 +62,10 @@ class _FetchingPageState extends State<FetchingPage> {
       bool workResult;
       try {
         workResult = await job.work(job);
-      } catch (e) {
+      } catch (e, st) {
         workResult = false;
         print('exception happens while exec job work. stage=$stage');
+        print(st);
         job.report = '\n\n-$e';
         print(e);
       }

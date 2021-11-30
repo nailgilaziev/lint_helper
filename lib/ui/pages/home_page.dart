@@ -24,7 +24,11 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     searchController = TextEditingController();
-    init();
+    searchController.addListener(() => setState(() {
+          print('search field content change provoked setState');
+          query = searchController.text;
+        }));
+    initializeData();
     super.initState();
   }
 
@@ -34,12 +38,18 @@ class _HomePageState extends State<HomePage> {
     searchController.dispose();
   }
 
-  void init() async {
+  void initializeData() async {
     if (widget.dataToShow != null) {
       useData(widget.dataToShow!);
       return;
     } else {
       final d = AllData();
+      d.addListener(() => setState(() {
+            /// когда через интерфейс добавления "моих правил" будут добавлены новые элементы
+            /// и если мы будем на вкладке my то интерфейс должен автоматически подхватить эти изменения
+            /// тоже самое должно произойти и при refresh all data
+            updateTabItems();
+          }));
       if (await d.fillFromDb()) {
         useData(d);
       } else {
@@ -47,17 +57,14 @@ class _HomePageState extends State<HomePage> {
       }
     }
     setState(() {
-      print('setState bootstrapped');
+      print('bootstrapped setState');
       bootstrapped = true;
     });
   }
 
   void useData(AllData data) {
-    setState(() {
-      print('setState useData');
-      this.data = data;
-      refreshItems();
-    });
+    this.data = data;
+    updateTabItems();
   }
 
   Future<void> openFetchingPage() async {
@@ -67,8 +74,7 @@ class _HomePageState extends State<HomePage> {
             builder: (BuildContext context) => FetchingPage(data: data)));
     if (result != null) {
       setState(() {
-        print('setState openFetchingPage()');
-        print('saving result from fetching page');
+        print('saving result from fetching page - setState');
         useData(result);
       });
     } else {
@@ -97,36 +103,38 @@ class _HomePageState extends State<HomePage> {
 
   String _query = '';
 
-  List<Item> allItems = [];
+  List<Item> tabItems = [];
 
   String get query => _query;
 
   set query(String query) {
     _query = query;
-    setState(() {
-      print('setState query');
-      if (query.isEmpty) {
-        for (final item in data!.all) {
-          item.resetIndexes();
-        }
-      } else {
-        for (final item in allItems) {
-          item.match(query);
-        }
-      }
-      refreshItems();
-    });
+    print('new query = [$query]');
+    updateShowedItemsForTab();
   }
 
-  List<Item> items = [];
+  List<Item> filteredItems = [];
 
-  void refreshItems() {
-    print('.refreshItems() called');
-    allItems = itemsForIndex(_selectedIndex);
-    print('allItems now ${allItems.length}');
-    items = allItems.where((item) => item.indexes != null).toList();
-    print('items filtered ${items.length}');
-    items.sort((a, b) => b.rank.compareTo(a.rank));
+  void updateTabItems() {
+    tabItems = itemsForIndex(_selectedIndex);
+    print('allItems now ${tabItems.length}');
+    updateShowedItemsForTab();
+  }
+
+  void updateShowedItemsForTab() {
+    print('.updateShowedItemsForTab()');
+    if (query.isEmpty) {
+      for (final item in tabItems) {
+        item.resetIndexes();
+      }
+    } else {
+      for (final item in tabItems) {
+        item.match(query);
+      }
+    }
+    filteredItems = tabItems.where((item) => item.indexes != null).toList();
+    print('filteredItems count ${filteredItems.length}');
+    filteredItems.sort((a, b) => b.rank.compareTo(a.rank));
   }
 
   Widget buildSearchField() => Container(
@@ -138,10 +146,6 @@ class _HomePageState extends State<HomePage> {
         child: TextField(
           controller: searchController,
           autofocus: true,
-          onChanged: (v) => setState(() {
-            print('setState onChanged');
-            query = v;
-          }),
           decoration: InputDecoration(
               prefixIcon: const Icon(Icons.search),
               suffixIcon: IconButton(
@@ -150,7 +154,7 @@ class _HomePageState extends State<HomePage> {
                   searchController.clear();
                 },
               ),
-              hintText: 'Search among ${allItems.length}',
+              hintText: 'Search among ${tabItems.length}',
               border: InputBorder.none),
         ),
       ));
@@ -169,7 +173,7 @@ class _HomePageState extends State<HomePage> {
       ),
       drawer: data == null || widget.dataToShow != null
           ? null
-          : LeftDrawer(data: data!, refreshDataFunc: openFetchingPage),
+          : LeftDrawer(data: data!, openFetchingPageFunc: openFetchingPage),
       body: buildBody(),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.shifting,
@@ -198,7 +202,7 @@ class _HomePageState extends State<HomePage> {
           child: OutlinedButton(
               onPressed: openFetchingPage, child: const Text('Fetch data')));
     }
-    return ItemsListView(items: items);
+    return ItemsListView(items: filteredItems);
   }
 
   static const TextStyle optionStyle =
@@ -219,10 +223,10 @@ class _HomePageState extends State<HomePage> {
   ];
 
   void _onItemTapped(int index) {
+    print('._onItemTapped($index)');
     setState(() {
-      print('setState _onItemTapped');
       _selectedIndex = index;
-      refreshItems();
+      updateTabItems();
     });
   }
 }

@@ -5,11 +5,11 @@ import 'package:lint_helper/ui/pages/my_rules_page.dart';
 
 class LeftDrawer extends StatelessWidget {
   const LeftDrawer(
-      {Key? key, required this.data, required this.refreshDataFunc})
+      {Key? key, required this.data, required this.openFetchingPageFunc})
       : super(key: key);
 
   final AllData data;
-  final Future<void> Function() refreshDataFunc;
+  final Future<void> Function() openFetchingPageFunc;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class LeftDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(context,
                   MaterialPageRoute(builder: (BuildContext context) {
-                return const MyRulesPage();
+                    return MyRulesPage(data: data);
               }));
             },
           ),
@@ -47,7 +47,7 @@ class LeftDrawer extends StatelessWidget {
             leading: const Icon(Icons.replay_circle_filled),
             onTap: () {
               Navigator.pop(context);
-              refreshDataFunc();
+              openFetchingPageFunc();
             },
           ),
           Expanded(

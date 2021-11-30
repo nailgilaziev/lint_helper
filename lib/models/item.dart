@@ -67,9 +67,9 @@ class Item {
   void match(String queryString) {
     var query = queryString.replaceAll(' ', '');
 
-    print('text = $name');
-    print('query = $queryString');
-    print('');
+    // print('text = $name');
+    // print('query = $queryString');
+    // print('');
     List<List<int>>? positions;
     if (queryString.contains(' ')) {
       //strong mode? пробел наверное использовался осмысленно? и посимвольно искать не нужно уже. требуется поиск по словам?
@@ -86,7 +86,7 @@ class Item {
     } else {
       positions = positionsForEachSymbol(query);
     }
-    print('positions=$positions');
+    // print('positions=$positions');
     if (positions == null) {
       _indexes = null;
       return;
@@ -100,7 +100,7 @@ class Item {
 
     rank = calculateMaxContinuousWordLength();
     rank += additionalRankForFirstLetters();
-    print('indexes:$indexes');
+    // print('indexes:$indexes');
   }
 
   int calculateMaxContinuousWordLength() {
@@ -141,7 +141,7 @@ class Item {
   List<List<int>>? positionsForEachSymbol(String query) {
     final positions =
         List.generate(query.length, (i) => name.allIndexes(query[i]));
-    print(positions);
+    // print(positions);
     var minimalIndex = -1;
     for (final inner in positions) {
       inner.cutLowerThan(minimalIndex + 1);

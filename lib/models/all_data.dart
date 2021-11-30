@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:lint_helper/models/item.dart';
 import 'package:lint_helper/models/lint_source.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,10 +10,14 @@ const String kReplacement = '{***}';
 const lintRulePageTemplate =
     'https://dart-lang.github.io/linter/lints/$kReplacement.html';
 
-class AllData {
+class AllData extends ChangeNotifier {
   DateTime? syncDate;
   List<Item> all = [];
   Map<LintSource, List<Item>> included = {};
+
+  void notifyMyItemsAdded() {
+    notifyListeners();
+  }
 
   Future<bool> fillFromDb() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -76,10 +81,11 @@ class AllData {
     return deserialized;
   }
 
-  Future<bool> saveLintsForSource(LintSource source, List<String> names) async {
+  Future<bool> saveLintsForSource(
+      LintSource source, Iterable<String> names) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     print('saving rules:${names.length} for $source');
-    return prefs.setStringList(source.toString(), names);
+    return prefs.setStringList(source.toString(), names.toList());
   }
 
   List<Item> genSpecificItems() {

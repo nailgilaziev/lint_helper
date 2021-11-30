@@ -52,6 +52,6 @@ String urlForSource(LintSource source) {
     case LintSource.nail:
       return '';
     case LintSource.my:
-      return '';
+      throw 'Incorrect usage: url for LintSource.my can not exist';
   }
 }

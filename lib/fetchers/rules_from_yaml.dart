@@ -1,7 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'package:lint_helper/models/lint_source.dart';
 
-const kPrefix = '    ';
+const kLinePrefix = '    ';
+const kCommentPrefix = '    #';
 
 class YamlRules {
   Future<Set<String>> fetchRules(LintSource source) async {
@@ -24,6 +25,7 @@ class YamlRules {
   String cutRulesFromYaml(String body) {
     if (body.length < 9) return body;
     int start = body.indexOf('  rules:');
+    if (start == -1) return body;
     final source = body.substring(start + 9);
     return source;
   }
@@ -31,14 +33,21 @@ class YamlRules {
   Set<String> rulesSourceToSet(String rulesSource) {
     final s = rulesSource
         .split('\n')
-        .where((line) => line.startsWith(kPrefix))
-        .map((line) {
-      if (line.contains(':')) {
-        final t = line.indexOf(':');
-        return line.trim().substring(0, t);
-      }
-      return line.substring(kPrefix.length + 2);
-    }).toSet();
+        .map((e) {
+          var line = e;
+          if (line.contains('#')) {
+            final commentStart = line.indexOf('#');
+            line = line.substring(0, commentStart);
+          }
+          if (line.contains(':')) {
+            final semicolonStart = line.indexOf(':');
+            line = line.substring(0, semicolonStart);
+          }
+          line = line.trim();
+          return line;
+        })
+        .where((element) => element.isNotEmpty)
+        .toSet();
     print('rules (maybe rules) founded: ${s.length}');
     return s;
   }
