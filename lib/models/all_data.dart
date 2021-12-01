@@ -55,7 +55,7 @@ class AllData extends ChangeNotifier {
     return savedVals.every((element) => element == true);
   }
 
-  void fillItemsForSource(LintSource source, Iterable<String> names) {
+  int fillItemsForSource(LintSource source, Iterable<String> names) {
     var items = all.where((e) {
       return names.contains(e.name);
     }).toSet();
@@ -64,6 +64,7 @@ class AllData extends ChangeNotifier {
     }
     print('added ${items.length} to included for $source');
     included[source] = items;
+    return items.length;
   }
 
   Future<bool> saveItems(Set<Item> allRules) async {

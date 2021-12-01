@@ -8,9 +8,7 @@ import 'package:lint_helper/ui/pieces/items_list_view.dart';
 
 //TODO запоминать выбранный фильтр или всегда открывать на my если он заполнен
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key, this.dataToShow}) : super(key: key);
-
-  final AllData? dataToShow;
+  const HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -24,10 +22,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     searchController = TextEditingController();
-    searchController.addListener(() => setState(() {
-          print('search field content change provoked setState');
-          query = searchController.text;
-        }));
     initializeData();
     super.initState();
   }
@@ -39,22 +33,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void initializeData() async {
-    if (widget.dataToShow != null) {
-      useData(widget.dataToShow!);
-      return;
-    } else {
-      final d = AllData();
+    final d = AllData();
       d.addListener(() => setState(() {
-            /// когда через интерфейс добавления "моих правил" будут добавлены новые элементы
-            /// и если мы будем на вкладке my то интерфейс должен автоматически подхватить эти изменения
-            updateTabItems();
-          }));
+          print('allData chage cause setState');
+
+          /// когда через интерфейс добавления "моих правил" будут добавлены новые элементы
+          /// и если мы будем на вкладке my то интерфейс должен автоматически подхватить эти изменения
+          updateTabItems();
+        }));
       if (await d.fillFromDb()) {
         useData(d);
       } else {
         openFetchingPage();
       }
-    }
+
     setState(() {
       print('bootstrapped setState');
       bootstrapped = true;
@@ -141,13 +133,19 @@ class _HomePageState extends State<HomePage> {
         child: TextField(
           controller: searchController,
           autofocus: true,
+          onChanged: (v) => setState(() {
+            print('search field content change provoked setState');
+            query = searchController.text;
+          }),
           decoration: InputDecoration(
               prefixIcon: const Icon(Icons.search),
               suffixIcon: IconButton(
                 icon: const Icon(Icons.clear),
-                onPressed: () {
+                onPressed: () => setState(() {
+                  print('search field content change provoked setState');
                   searchController.clear();
-                },
+                  query = '';
+                }),
               ),
               hintText: 'Search among ${tabItems.length}',
               border: InputBorder.none),
@@ -158,7 +156,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    print('build called. data=$data widget.dataToShow=${widget.dataToShow}');
+    print('build called. data=$data');
     final navItems = List<LintSource?>.from(LintSource.values);
     navItems.insert(insertIndexForAll, null);
 
@@ -166,7 +164,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: buildSearchField(),
       ),
-      drawer: data == null || widget.dataToShow != null
+      drawer: data == null
           ? null
           : LeftDrawer(data: data!, openFetchingPageFunc: openFetchingPage),
       body: buildBody(),
@@ -218,8 +216,8 @@ class _HomePageState extends State<HomePage> {
   ];
 
   void _onItemTapped(int index) {
-    print('._onItemTapped($index)');
     setState(() {
+      print('._onItemTapped($index) setState');
       _selectedIndex = index;
       updateTabItems();
     });

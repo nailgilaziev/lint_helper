@@ -44,6 +44,9 @@ class YamlRules {
             line = line.substring(0, semicolonStart);
           }
           line = line.trim();
+          if (line.startsWith('- ')) {
+            line = line.substring(2);
+          }
           return line;
         })
         .where((element) => element.isNotEmpty)

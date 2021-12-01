@@ -44,64 +44,71 @@ class _ComparePageState extends State<ComparePage> {
   @override
   Widget build(BuildContext context) {
     final wide = MediaQuery.of(context).size.width > 700;
+    final threeList = [
+      ItemsListView(items: comparator.leftSet.toList()),
+      ItemsListView(items: comparator.middleSet.toList()),
+      ItemsListView(items: comparator.rightSet.toList()),
+    ];
+    final body = wide
+        ? Row(children: threeList.map((e) => Expanded(child: e)).toList())
+        : TabBarView(
+            children: threeList,
+          );
+    final scaffold = Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            buildDropDown(leftSource),
+            const Text('vs', textScaleFactor: 0.6),
+            buildDropDown(rightSource),
+          ],
+        ),
+        bottom: TabBar(
+          tabs: myTabs,
+        ),
+      ),
+      body: body,
+    );
     return DefaultTabController(
-        length: myTabs.length,
-        child: Scaffold(
-          appBar: AppBar(
-            centerTitle: true,
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                buildDropDown(leftSource),
-                const Text('vs', textScaleFactor: 0.6),
-                buildDropDown(rightSource),
-              ],
-            ),
-            bottom: TabBar(
-              tabs: myTabs,
-            ),
-          ),
-          body: TabBarView(
-            children: [
-              ItemsListView(items: comparator.leftSet.toList()),
-              ItemsListView(items: comparator.middleSet.toList()),
-              ItemsListView(items: comparator.rightSet.toList()),
-            ],
-          ),
-          // wide
-          //     ? Row(
-          //         children: [
-          //           Expanded(
-          //             child: Column(
-          //               children: buildPanel(leftSource),
-          //             ),
-          //           ),
-          //           Container(
-          //             color: Colors.black26,
-          //             width: 1,
-          //           ),
-          //           Expanded(
-          //             child: Column(
-          //               children: buildPanel(rightSource),
-          //             ),
-          //           )
-          //         ],
-          //       )
-          //     :
-          //     Column(
-          //   crossAxisAlignment: CrossAxisAlignment.stretch,
-          //   children: [
-          //     buildDropDown(leftSource),
-          //     Expanded(
-          //       child: ItemsListView(items: comparator.leftSet.toList()),
-          //     ),
-          //     buildDropDown(rightSource),
-          //     Expanded(
-          //       child: ItemsListView(items: comparator.rightSet.toList()),
-          //     ),
-          //   ],
-          // ),
-        ));
+      length: myTabs.length,
+      child: scaffold,
+    );
+
+    // wide
+    //     ? Row(
+    //         children: [
+    //           Expanded(
+    //             child: Column(
+    //               children: buildPanel(leftSource),
+    //             ),
+    //           ),
+    //           Container(
+    //             color: Colors.black26,
+    //             width: 1,
+    //           ),
+    //           Expanded(
+    //             child: Column(
+    //               children: buildPanel(rightSource),
+    //             ),
+    //           )
+    //         ],
+    //       )
+    //     :
+    //     Column(
+    //   crossAxisAlignment: CrossAxisAlignment.stretch,
+    //   children: [
+    //     buildDropDown(leftSource),
+    //     Expanded(
+    //       child: ItemsListView(items: comparator.leftSet.toList()),
+    //     ),
+    //     buildDropDown(rightSource),
+    //     Expanded(
+    //       child: ItemsListView(items: comparator.rightSet.toList()),
+    //     ),
+    //   ],
+    // ),
   }
 
   Widget buildDropDown(ValueNotifier<LintSource> source) {

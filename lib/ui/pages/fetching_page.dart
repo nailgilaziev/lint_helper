@@ -4,7 +4,6 @@ import 'package:lint_helper/fetchers/all_rules_from_html.dart';
 import 'package:lint_helper/fetchers/rules_from_yaml.dart';
 import 'package:lint_helper/models/all_data.dart';
 import 'package:lint_helper/models/lint_source.dart';
-import 'package:lint_helper/ui/pages/home_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class FetchingPage extends StatefulWidget {
@@ -46,8 +45,8 @@ class _FetchingPageState extends State<FetchingPage> {
       Job('Fetching and parsing $source lint rules...', urlForSource(source),
           (job) async {
         final names = await YamlRules().fetchRules(source);
-        data!.fillItemsForSource(source, names);
-        job.report = '\n\n- fetched:${names.length}';
+        int filled = data!.fillItemsForSource(source, names);
+        job.report = '\n\n- fetched:${names.length} (valid:$filled)';
         return true;
       }),
   ];
@@ -136,15 +135,6 @@ class _FetchingPageState extends State<FetchingPage> {
                     textScaleFactor: 1.2,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.deepOrange)),
-              if (stage == jobs.length)
-                OutlinedButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (BuildContext context) =>
-                              HomePage(dataToShow: data)));
-                    },
-                    child: const Text('VIEW DATA')),
-              const SizedBox(height: 16),
               if (stage == jobs.length)
                 ElevatedButton(
                     onPressed: saveData, child: const Text('SAVE DATA')),
