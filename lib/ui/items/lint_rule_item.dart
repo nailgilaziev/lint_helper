@@ -19,10 +19,10 @@ class LintRuleItem extends StatelessWidget {
       ),
       subtitle: Row(
         children: [
-          Text(item.indexes.toString()),
-          const SizedBox(width: 16),
-          Text(item.rank.toString()),
-          const SizedBox(width: 16),
+          // Text(item.indexes.toString()),
+          // const SizedBox(width: 16),
+          // Text(item.rank.toString()),
+          // const SizedBox(width: 16),
           Expanded(
               child: Text(
             item.desc,
